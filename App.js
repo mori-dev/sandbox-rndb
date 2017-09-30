@@ -5,21 +5,19 @@ import * as Expo from 'expo';
 import firebase from './firebase'
 import styles from "./styles";
 
-const db = firebase.database();
-const ref = db.ref('rndb');
-
 export default class App extends React.Component {
 
   constructor() {
     super();
+    this.db = firebase.database();
+    this.ref = this.db.ref('rndb');
+
     this.state = {
       readyFlag: false,
-      point: 0,
+      point: null,
     };
-    ref.on('child_changed', snapshot => {
-      this.setState({
-        point: snapshot.val(),
-      })
+    this.ref.on('value', snapshot => {
+      this.setState(snapshot.val())
     })
   }
 
@@ -30,8 +28,20 @@ export default class App extends React.Component {
     this.setState({ readyFlag: true });
   }
 
+  componentWillUpdate(nextProps, nextState) {
+    this.ref.on('child_changed', snapshot => {
+      this.setState({
+        point: snapshot.val(),
+      })
+    })
+  }
+
+  componentWillUnmount() {
+    this.ref.off()
+  }
+
   add() {
-    ref.update({
+    this.ref.update({
       point: this.state.point + 1
     })
   }

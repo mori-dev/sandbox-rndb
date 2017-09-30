@@ -1,9 +1,12 @@
 import React from 'react';
 import { Root, Container, Text, View, Button } from 'native-base';
+import * as Expo from 'expo';
 
+import firebase from './firebase'
 import styles from "./styles";
 
-import * as Expo from 'expo';
+const db = firebase.database();
+const ref = db.ref('rndb');
 
 export default class App extends React.Component {
 
@@ -13,6 +16,11 @@ export default class App extends React.Component {
       readyFlag: false,
       point: 0,
     };
+    ref.on('child_changed', snapshot => {
+      this.setState({
+        point: snapshot.val(),
+      })
+    })
   }
 
   async componentWillMount() {
@@ -23,7 +31,9 @@ export default class App extends React.Component {
   }
 
   add() {
-    this.setState({ point: (this.state.point + 1)});
+    ref.update({
+      point: this.state.point + 1
+    })
   }
 
   render() {
